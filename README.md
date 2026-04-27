@@ -1,6 +1,11 @@
 # Tox21 Toxicity Machine Learning Classification
 
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
+![RDKit](https://img.shields.io/badge/RDKit-cheminformatics-2ecc71)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-orange?logo=scikitlearn)
+
 ## Quick Links
+- [Technical Report (PDF)](tox21_report.pdf)
 - [Processed Datasets](#data-access)
 - [Model Performance](#performance-summary)
 - [Visualizations Archive](results/plots/)
@@ -34,7 +39,7 @@ Models were trained using Stratified K-Fold Cross-Validation with `class_weight=
 | Random Forest | Descriptors | 0.6729 | 0.9186 | 0.4413 | 0.4578 |
 | SVM | Fingerprints | 0.6585 | 0.9123 | 0.6350 | 0.5844 |
 
-> Full results available in: [results](results/best_models.csv))
+> Full results available in: [results](results/best_models.csv)
 
 **Key Findings:**
 - **Combination Advantage:** The hybrid approach (Mixed) achieved a significant performance boost over using descriptors or fingerprints in isolation.
@@ -109,4 +114,4 @@ University of Bologna - AML Basic Course
 Email: [marco.larosa4@studio.unibo.it](mailto:marco.larosa4@studio.unibo.it)
 
 ---
-*Developed with ❤️ for Computational Medicinal Chemistry*
+*Just someone having fun with chemistry and machine learning*
