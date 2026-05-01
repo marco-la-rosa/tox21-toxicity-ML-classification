@@ -15,29 +15,33 @@
 This study implements a computational pipeline for toxicity prediction using the Tox21 dataset, focusing on the **NR-AhR** (Aryl Hydrocarbon Receptor) endpoint. The goal is the binary classification of molecules as active (toxic) or inactive (non-toxic) based on their structural properties.
 
 ## Data Analysis and Class Distribution
-The dataset exhibits significant class imbalance. For the NR-AhR target, active samples constitute approximately **12%** of the total. This endpoint was selected for its biological significance and relatively higher positive sample rate compared to other targets.
 
-Detailed distribution plot: [class-distribution.png](results/plots/class-distribution.png)
+The dataset is highly imbalanced, with toxic (active) samples representing a small fraction of the labeled data and a non-negligible amount of missing values across targets.
+
+For the NR-AhR target, active samples account for ~11.7% of the valid (non-missing) data, with ~16% missing values overall.
+This target was selected as a trade-off between data availability and class distribution, and it favors simplicity over more complex approaches such as multi-target learning.
+
+> Detailed distribution plot: [class-distribution.png](results/plots/class-distribution.png)
 
 ## Feature Engineering Strategies
 Three distinct molecular representation strategies were evaluated to identify the most predictive feature set:
 
-1.  **Molecular Descriptors:** 200+ physicochemical properties. The pipeline included cleaning invalid SMILES, filtering infinite features, scaling, `VarianceThreshold` for constant features, and optimization via `SelectKBest` and **Recursive Feature Elimination (RFE)**.
+1. Molecular Descriptors: over 200 physicochemical properties were computed from SMILES using RDKit. The pipeline included removal of invalid molecules, filtering of non-finite values, and elimination of constant features using `VarianceThreshold`. Features were then standardized using `StandardScaler`. Due to the high dimensionality of the descriptor space, feature selection was performed using two complementary methods: Mutual Information (`SelectKBest`) and Recursive Feature Elimination (`RFE`), both evaluated through stratified 5-fold cross-validation optimizing PR-AUC. The final feature set was obtained by retaining the intersection of features selected by both methods.
 2.  **Morgan Fingerprints:** 2048-bit circular fingerprints. No feature selection was applied as each bit represents a substructure, and the predictive value lies in the **combination of bits** rather than individual features.
 3.  **Mixed (Combination):** A hybrid approach concatenating selected descriptors with fingerprints to capture both physical properties and structural motifs.
 
 **Conclusion:** The **Mixed** representation consistently outperformed individual feature sets across all classification metrics.
 
 ## Performance Summary
-Models were trained using Stratified K-Fold Cross-Validation with `class_weight="balanced"`.
+Models were trained using Stratified 5-Fold Cross-Validation with `class_weight="balanced"`.
 
 | Model | Feature Set | PR-AUC | ROC-AUC | F1-Score | MCC |
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Logistic Regression** | **Mixed** | **0.7205** | 0.9185 | 0.6097 | 0.5742 |
-| **SVM** | **Mixed** | 0.7133 | 0.9083 | **0.6316** | **0.5833** |
+| **SVM** | **Mixed** | 0.7133 | 0.9083 | 0.6316 | 0.5833 |
 | **Random Forest** | **Mixed** | 0.7166 | **0.9296** | 0.5182 | 0.5335 |
 | Random Forest | Descriptors | 0.6729 | 0.9186 | 0.4413 | 0.4578 |
-| SVM | Fingerprints | 0.6585 | 0.9123 | 0.6350 | 0.5844 |
+| SVM | Fingerprints | 0.6585 | 0.9123 | **0.6350** | **0.5844** |
 
 > Full results available in: [results](results/best_models.csv)
 
@@ -62,13 +66,15 @@ Direct links to the generated training and testing sets:
 ```text
 .
 ├── data/
-│   ├── raw/                # Raw Tox21 data
-│   └── processed/          # Engineered datasets (Descriptors, Fingerprints, Mixed)
+│   ├── raw/                                      # Original Tox21 dataset
+│   └── processed/                                # Engineered datasets
 ├── results/
-│   ├── plots/              # ROC, PR, CM, and Distribution plots
-│   ├── models/             # Serialized .joblib models
-│   └── best_models.csv     # Global metrics report
-└── tox21-toxicity-ML-classification.ipynb
+│   ├── models/                                   # Serialized trained models (.joblib)
+│   ├── plots/                                    # Visualizations
+│   ├── best_models.csv                           # Global metrics report
+├── tox21-toxicity-ML-classification.ipynb        # Main analysis and pipeline notebook
+├── tox21_report.pdf                              # Detailed technical report
+└── README.md                                     # Project documentation
 ```
 
 ## Tools Used
@@ -82,15 +88,9 @@ Direct links to the generated training and testing sets:
 
 ---
 
-## Potential Limitations
-
-* Single endpoint (NR-AhR) — results may not generalize to other targets
-* No external validation dataset
-
----
-
 ## Future Work
 
+* Threshold tuning
 * Multi-task learning across all 12 endpoints
 * Advanced models (e.g., XGBoost, deep learning)
 * Handling imbalance with more advanced techniques (SMOTE, focal loss)
@@ -101,10 +101,10 @@ Direct links to the generated training and testing sets:
 ## Reproducibility
 To replicate the analysis, execute the following commands:
 ```bash
-pip install pandas numpy rdkit scikit-learn matplotlib seaborn joblib
+pip install notebook pandas numpy rdkit scikit-learn matplotlib seaborn joblib
 jupyter notebook tox21-toxicity-ML-classification.ipynb
 ```
-The pipeline automatically handles data processing, feature selection, and model evaluation, storing all outputs in the `results/` directory.
+The pipeline automatically handles data processing, feature selection, and model evaluation, storing all outputs in the `results/` and `data/processed/` directories.
 
 ---
 
