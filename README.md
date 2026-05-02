@@ -26,32 +26,33 @@ This target was selected as a trade-off between data availability and class dist
 ## Feature Engineering Strategies
 Three distinct molecular representation strategies were evaluated to identify the most predictive feature set:
 
-1. Molecular Descriptors: over 200 physicochemical properties were computed from SMILES using RDKit. The pipeline included removal of invalid molecules, filtering of non-finite values, and elimination of constant features using `VarianceThreshold`. Features were then standardized using `StandardScaler`. Due to the high dimensionality of the descriptor space, feature selection was performed using two complementary methods: Mutual Information (`SelectKBest`) and Recursive Feature Elimination (`RFE`), both evaluated through stratified 5-fold cross-validation optimizing PR-AUC. The final feature set was obtained by retaining the intersection of features selected by both methods.
+1. **Molecular Descriptors**: over 200 physicochemical properties were computed from SMILES using RDKit. The pipeline included removal of invalid molecules, filtering of non-finite values, and elimination of constant features using `VarianceThreshold`. Features were then standardized using `StandardScaler`. Due to the high dimensionality of the descriptor space, feature selection was performed using two complementary methods: Mutual Information (`SelectKBest`) and Recursive Feature Elimination (`RFE`), both evaluated through stratified 5-fold cross-validation optimizing PR-AUC. The final feature set was obtained by retaining the intersection of features selected by both methods.
 2.  **Morgan Fingerprints:** 2048-bit circular fingerprints. No feature selection was applied as each bit represents a substructure, and the predictive value lies in the **combination of bits** rather than individual features.
 3.  **Mixed (Combination):** A hybrid approach concatenating selected descriptors with fingerprints to capture both physical properties and structural motifs.
 
 **Conclusion:** The **Mixed** representation consistently outperformed individual feature sets across all classification metrics.
 
 ## Performance Summary
-Models were trained using Stratified 5-Fold Cross-Validation with `class_weight="balanced"`.
+Models were evaluated on the held-out test set using `class_weight="balanced"`.
 
 | Model | Feature Set | PR-AUC | ROC-AUC | F1-Score | MCC |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Logistic Regression** | **Mixed** | **0.7205** | 0.9185 | 0.6097 | 0.5742 |
-| **SVM** | **Mixed** | 0.7133 | 0.9083 | 0.6316 | 0.5833 |
-| **Random Forest** | **Mixed** | 0.7166 | **0.9296** | 0.5182 | 0.5335 |
-| Random Forest | Descriptors | 0.6729 | 0.9186 | 0.4413 | 0.4578 |
-| SVM | Fingerprints | 0.6585 | 0.9123 | **0.6350** | **0.5844** |
+| **SVM** | **Mixed** | **0.7232** | 0.9110 | **0.6667** | **0.6216** |
+| Random Forest | Mixed | 0.7069 | **0.9264** | 0.5339 | 0.5500 |
+| Logistic Regression | Mixed | 0.7038 | 0.9201 | 0.6238 | 0.5875 |
+| SVM | Descriptors | 0.6864 | 0.8981 | 0.6290 | 0.5814 |
+| SVM | Fingerprints | 0.6837 | 0.9118 | 0.6333 | 0.5862 |
 
 > Full results available in: [results](results/best_models.csv)
 
 **Key Findings:**
-- **Combination Advantage:** The hybrid approach (Mixed) achieved a significant performance boost over using descriptors or fingerprints in isolation.
-- **Top Metrics:** **Logistic Regression (Mixed)** provides the best **PR-AUC**, while **SVM (Mixed)** delivers the highest **F1-Score** and **MCC**, ensuring the most reliable balance for minority class detection.
+- **Feature Integration:** The mixed feature representation consistently provides the strongest performance, particularly in terms of PR-AUC, confirming the benefit of combining molecular descriptors and fingerprints.
 
-| Precision-Recall Curve (Top Model) | Confusion Matrix (Best Balance) |
+- **Best Overall Model:** The SVM trained on mixed features achieves the best overall performance, with the highest PR-AUC, F1-score, and MCC, indicating a strong balance between ranking ability and classification effectiveness on the minority class.
+
+| Precision-Recall Curve | Confusion Matrix |
 | :---: | :---: |
-| ![PR Curve](results/plots/mixed/pr_curve_Logistic%20Regression.png) | ![Confusion Matrix](results/plots/mixed/confusion_matrix_Support%20Vector%20Machine.png) |
+| ![PR Curve](results/plots/mixed/pr_curve_Support%20Vector%20Machine.png) | ![Confusion Matrix](results/plots/mixed/confusion_matrix_Support%20Vector%20Machine.png) |
 
 ## Data Access
 Direct links to the generated training and testing sets:
@@ -104,7 +105,7 @@ To replicate the analysis, execute the following commands:
 pip install notebook pandas numpy rdkit scikit-learn matplotlib seaborn joblib
 jupyter notebook tox21-toxicity-ML-classification.ipynb
 ```
-The pipeline automatically handles data processing, feature selection, and model evaluation, storing all outputs in the `results/` and `data/processed/` directories.
+The pipeline automatically handles data processing, feature selection, and model evaluation, storing all outputs in the `results/` and `data/` directories.
 
 ---
 
